@@ -1,0 +1,4 @@
+pytest
+dockerctx
+sqlalchemy
+psycopg2

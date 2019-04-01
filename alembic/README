@@ -1,0 +1,15 @@
+Instructions
+------------
+
+To create a new migration:
+
+1. In the venus root, run the following:
+
+    $ alembic revision -m "a basic description of the migration"
+
+   This will create a new migration file, e.g.
+
+        "alembic/versions/ee6e4fb62b2e_restructure_pseudowire_schema.py"
+
+2. Now you go edit the file. The "upgrade" section is for the upgrade
+   step, and the "downgrade" function is, unsurprisingly, for a downgrade.
