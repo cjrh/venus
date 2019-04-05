@@ -63,9 +63,6 @@ def zmq_context() -> Context:
 
 
 def apply_tcp_sock_options(sock: Socket):
-    sock.setsockopt(zmq.TCP_KEEPALIVE, settings.ZMQ_TCP_KEEPALIVE)
-    sock.setsockopt(zmq.TCP_KEEPALIVE_IDLE, settings.ZMQ_TCP_KEEPALIVE_IDLE)
-    sock.setsockopt(zmq.TCP_KEEPALIVE_INTVL, settings.ZMQ_TCP_KEEPALIVE_INTVL)
     sock.setsockopt(zmq.LINGER, 1)
 
 
