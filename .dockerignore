@@ -1,0 +1,4 @@
+**/.dockerignore
+**/.pytest_cache
+**/*.egg-info
+**/venv
