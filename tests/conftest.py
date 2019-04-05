@@ -1,4 +1,5 @@
 import json
+import pathlib
 import random
 import sys
 import asyncio
@@ -25,6 +26,10 @@ from venus.db import (
     destroy_database_pool,
     create_pool
 )
+
+
+# Alembic only works from the project root, so let's just go there.
+os.chdir(pathlib.Path(__file__).parent.parent)
 
 
 logger = logging.getLogger(__name__)
