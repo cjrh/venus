@@ -13,7 +13,7 @@ with open('requirements.txt') as f:
 
 
 extras_require = dict(
-     dev=['wheel', 'logjson'],
+     dev=['wheel', 'logjson', 'alembic', 'bumpversion'],
      test=['pytest', 'pytest-cov', 'pytest-asyncio', 'dockerctx',
            'portpicker', 'alembic'],
      doc=['sphinx', 'sphinxcontrib-fulltoc', 'sphinxcontrib-websupport']
