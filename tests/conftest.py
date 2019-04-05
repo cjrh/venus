@@ -71,7 +71,7 @@ def db_pool_session():
         loop.run_until_complete(db_pool.close())
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def db_fixture():
     db_username = 'postgres'  # default POSTGRES_USER value inside container
     db_password = 'password'

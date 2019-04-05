@@ -1,7 +1,5 @@
 import asyncio
-
-import pytest
-from pprint import pprint, pformat
+from pprint import pprint
 
 from asyncpg import Connection
 

@@ -53,7 +53,8 @@ def zmq_context() -> Context:
     around `aiorun.run(amain())`"""
     global CONTEXT
     logger.info('Creating ZMQ context.')
-    CONTEXT = Context.instance()
+    # CONTEXT = Context.instance()
+    CONTEXT = Context()
     try:
         yield CONTEXT
     finally:
