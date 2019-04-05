@@ -40,7 +40,7 @@ setup(
     packages=find_packages(exclude=['docs', 'tests*']),
     install_requires=requires,
     extras_require=extras_require,
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     entry_points={
         'console_scripts': [
             'venus = venus.main:main',
