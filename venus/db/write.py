@@ -29,6 +29,7 @@ async def collect(q: asyncio.Queue[Message]):
                 continue
 
             try:
+                logger.debug(f'Got message in collect: {msg}')
                 d = json.loads(msg.message)
             except json.JSONDecodeError:
                 logger.exception(f'JSON decoding failed on: {msg.message}')
@@ -66,12 +67,13 @@ def remove_unwanted_keys(data: Dict):
         data.pop(key, None)
 
 
-@aiodec.astopwatch('Inserting $size records took $time_ sec')
+@aiodec.astopwatch(message_template='Inserting $size records took $time_ sec')
 async def write_and_clear(records: List, size: int):
     pool = get_db_pool()
     async with pool.acquire() as conn:  # type: Connection
         # TODO: keep track of https://github.com/MagicStack/asyncpg/pull/295
         # TODO: `executemany` performance is being optimized.
+        logger.debug(f'Writing records to DB: {records}')
         await conn.executemany('INSERT INTO logs VALUES ($1, $2, $3, $4)',
                                records)
     records.clear()

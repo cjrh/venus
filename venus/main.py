@@ -9,8 +9,8 @@ import aiohealthcheck
 
 from venus import db
 import venus.db.write
-from . import io
-from . import settings
+from venus import io
+from venus import settings
 
 logger = logging.getLogger(__name__)
 

@@ -53,13 +53,15 @@ def zmq_context() -> Context:
     around `aiorun.run(amain())`"""
     global CONTEXT
     logger.info('Creating ZMQ context.')
-    # CONTEXT = Context.instance()
-    CONTEXT = Context()
+    CONTEXT = Context.instance()
+    # CONTEXT = Context()
     try:
         yield CONTEXT
+    except Exception as e:
+        logger.exception(f'Got error {e}')
     finally:
         logger.info('Terminating ZMQ context')
-        CONTEXT.term()
+        CONTEXT.destroy()
         logger.info('ZMQ context terminated.')
 
 
@@ -84,12 +86,13 @@ async def pull_sock(q: asyncio.Queue) -> None:
     incoming IO messages onto the given queue."""
     sock: Socket = CONTEXT.socket(zmq.PULL)
     apply_tcp_sock_options(sock)
-    sock.bind(f'tcp://*:{settings.VENUS_PORT:d}')
+    sock.bind(f'tcp://*:{settings.VENUS_PORT():d}')
 
     try:
         logger.debug('Waiting for data on pull socket')
         while True:
             raw: List[bytes] = await sock.recv_multipart()
+            print(f'Received a message! {raw}')
             try:
                 msg = types.Message(*raw)
             except TypeError:
