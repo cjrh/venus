@@ -1,8 +1,8 @@
 [run]
 branch = True
-include =
-    venus/*
-    tests/*
+source =
+    venus
+    tests
 omit =
     setup.py
     contrib/*

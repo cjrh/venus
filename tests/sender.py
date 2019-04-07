@@ -6,8 +6,8 @@ import contextlib
 import logging
 import time
 from collections import defaultdict
-from functools import partial
 
+import biodome
 import logjson
 import zmq
 from zmq.log.handlers import PUBHandler
@@ -47,16 +47,30 @@ def setup_logging(sock):
 
 
 def app(iterations, delay=1.0):
-    for i in range(int(iterations)):
+    for i in range(iterations):
         logger.info('This is a test')
         time.sleep(delay)
 
 
+def app_items(items, delay=1.0):
+    for item in items:
+        if isinstance(item, dict) and 'message' in item:
+            message = item.pop('message')
+            logger.info(message, extra=item)
+        else:
+            logger.info(item)
+        time.sleep(delay)
+
+
 def main(args):
+    SENDER_ITEMS = biodome.environ.get('SENDER_ITEMS', [])
     with make_sock() as sock:
         sock.connect(f'tcp://{args.hostname}:{args.port}')
         setup_logging(sock)
-        app(args.iterations)
+        if SENDER_ITEMS:
+            app_items(SENDER_ITEMS, args.delay)
+        else:
+            app(args.iterations, args.delay)
 
 
 if __name__ == '__main__':
@@ -64,6 +78,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-H', '--hostname', default='localhost')
     parser.add_argument('-p', '--port', default=12345)
-    parser.add_argument('-i', '--iterations', default=10)
+    parser.add_argument('-i', '--iterations', default=10, type=int)
+    parser.add_argument('-d', '--delay', default=1.0, type=float)
     args = parser.parse_args()
     main(args)

@@ -92,7 +92,7 @@ async def pull_sock(q: asyncio.Queue) -> None:
         logger.debug('Waiting for data on pull socket')
         while True:
             raw: List[bytes] = await sock.recv_multipart()
-            print(f'Received a message! {raw}')
+            logger.debug(f'Received a message! {raw}')
             try:
                 msg = types.Message(*raw)
             except TypeError:

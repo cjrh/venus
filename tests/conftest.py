@@ -1,23 +1,17 @@
-import json
-import pathlib
-import random
-import sys
 import asyncio
-import uuid
-import asyncpg
+import json
+import logging
 import os
-
-from contextlib import contextmanager
+import pathlib
+import sys
+import uuid
 from datetime import datetime, timezone
 
-import biodome
-import pytest
-import dockerctx
 import alembic.config
-import logging
+import biodome
+import dockerctx
+import pytest
 import sqlalchemy
-from typing import NamedTuple
-
 from asyncpg import Connection
 
 from venus.db import (
@@ -26,7 +20,6 @@ from venus.db import (
     destroy_database_pool,
     create_pool
 )
-
 
 # Alembic only works from the project root, so let's just go there.
 os.chdir(pathlib.Path(__file__).parent.parent)
@@ -59,7 +52,7 @@ def db_pool():
         loop.run_until_complete(destroy_database_pool())
 
 
-@contextmanager
+@pytest.fixture(scope='session')
 def db_pool_session():
     """ This DB pool is only for test functions and
     utilities, and is not available to application code."""
@@ -68,7 +61,8 @@ def db_pool_session():
     try:
         yield db_pool
     finally:
-        loop.run_until_complete(db_pool.close())
+        # loop.run_until_complete(db_pool.close())
+        pass
 
 
 @pytest.fixture(scope='session')
@@ -85,6 +79,7 @@ def db_fixture():
             ports={'5432/tcp': db_port},
             tmpfs=['/tmp', '/var/lib/postgresql/data:rw'],
             ready_test=lambda: dockerctx.pg_ready(host=db_host, port=db_port),
+            persist=lambda: True,
             environment=['POSTGRES_PASSWORD=password'],
     ) as container:
         logger.info(
@@ -155,10 +150,9 @@ def db_fixture():
 
 
 @pytest.fixture(scope='module')
-def randomly_generated_data(request, db_fixture):
+def randomly_generated_data(request, db_fixture, db_pool_session):
     loop = asyncio.get_event_loop()
-    with db_pool_session() as db_pool:
-        loop.run_until_complete(insert_data(db_pool))
+    loop.run_until_complete(insert_data(db_pool_session))
 
 
 async def insert_data(db_pool):

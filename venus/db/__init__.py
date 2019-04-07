@@ -1,10 +1,11 @@
+import asyncio
+import json
 import logging
 from typing import Awaitable
+
 import asyncpg
 import asyncpg.pool
 import biodome
-import json
-
 
 logger = logging.getLogger(__name__)
 
@@ -80,3 +81,12 @@ class DatabasePool:
 
 def get_db_pool():
     return DATABASE_POOL
+
+
+async def activate():
+    """Decorator for maintaining the db pool"""
+    await init_database_pool()
+    try:
+        await asyncio.sleep(1e9)
+    except asyncio.CancelledError:
+        await destroy_database_pool()

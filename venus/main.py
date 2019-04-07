@@ -1,42 +1,50 @@
-import sys
 import argparse
 import asyncio
 import logging
+import sys
+from weakref import WeakValueDictionary
+
+import aiohealthcheck
+import aiologfields
 import aiorun
 import biodome
-import aiologfields
-import aiohealthcheck
 
-from venus import db
 import venus.db.write
+from venus import db
 from venus import io
 from venus import settings
 
 logger = logging.getLogger(__name__)
 
 
-async def amain(args):
-    """Start up all the long-running tasks. The tasks typically communicate
-    with each other via queues...mostly. """
+async def amain(args) -> WeakValueDictionary:
+    """Start up all the long-running tasks and then return.
+    The tasks typically communicate with each other via queues that
+    are set up here."""
     loop = asyncio.get_event_loop()
+    tasks_created = WeakValueDictionary()
+
+    tasks_created['db_pool'] = loop.create_task(db.activate())
 
     logger.info('Task: live-loading env vars and logging levels')
-    loop.create_task(settings.refresh_from_configuration())
+    tasks_created['config'] = loop.create_task(settings.refresh_from_configuration())
 
     # The PULL queue is used to transfer incoming API calls from the
     # IO layer over to the DB layer.
     pull_queue = asyncio.Queue(maxsize=65536)
-    loop.create_task(io.zmq_connection_manager(pull_queue))
-    loop.create_task(venus.db.write.collect(pull_queue))
+    tasks_created['zmq'] = loop.create_task(io.zmq_connection_manager(pull_queue))
+    tasks_created['db_writer'] = loop.create_task(venus.db.write.collect(pull_queue))
 
     logger.info('Task: starting up health check listener')
-    loop.create_task(
+    tasks_created['healthcheck'] = loop.create_task(
         aiohealthcheck.tcp_health_endpoint(
             port=settings.HEALTH_CHECK_PORT,
             host=settings.HEALTH_CHECK_HOST,
             payload=lambda: 'ok'
         )
     )
+
+    return tasks_created
 
 
 def main():

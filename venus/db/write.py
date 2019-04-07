@@ -69,14 +69,19 @@ def remove_unwanted_keys(data: Dict):
 
 @aiodec.astopwatch(message_template='Inserting $size records took $time_ sec')
 async def write_and_clear(records: List, size: int):
-    pool = get_db_pool()
-    async with pool.acquire() as conn:  # type: Connection
-        # TODO: keep track of https://github.com/MagicStack/asyncpg/pull/295
-        # TODO: `executemany` performance is being optimized.
-        logger.debug(f'Writing records to DB: {records}')
-        await conn.executemany('INSERT INTO logs VALUES ($1, $2, $3, $4)',
-                               records)
-    records.clear()
+    try:
+        pool = get_db_pool()
+        async with pool.acquire() as conn:  # type: Connection
+            # TODO: keep track of https://github.com/MagicStack/asyncpg/pull/295
+            # TODO: `executemany` performance is being optimized.
+            logger.debug(f'Writing records to DB: {records}')
+            await conn.executemany('INSERT INTO logs VALUES ($1, $2, $3, $4)',
+                                   records)
+    except Exception as e:
+        logger.exception('Error while writing records. The pending record '
+                         'set will not be cleared.')
+    else:
+        records.clear()
 
 
 def extract_safe(d, key, constructor=lambda x: x):
