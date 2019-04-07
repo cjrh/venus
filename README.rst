@@ -3,6 +3,8 @@ Venus
 
 Centralised logging
 
+.. image:: venus.jpg
+
 Development Setup
 -----------------
 
