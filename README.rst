@@ -62,11 +62,11 @@ a JSON message that looks something like this:
 
 What happens is that *venus* will
 
-0. write ``created_iso`` message field to the ``time`` DB field;
-0. write ``message`` message field to the ``message`` DB field;
-0. write ``correlation_id`` message field to the ``correlation_id`` DB field;
-0. remove some fields from the JSON blob (based on a configurable ignore list)
-0. write the *entire JSON blob* to the ``data`` DB field.
+#. write ``created_iso`` message field to the ``time`` DB field;
+#. write ``message`` message field to the ``message`` DB field;
+#. write ``correlation_id`` message field to the ``correlation_id`` DB field;
+#. remove some fields from the JSON blob (based on a configurable ignore list)
+#. write the *entire JSON blob* to the ``data`` DB field.
 
 This is how the logging data gets into the database.
 
