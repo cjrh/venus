@@ -1,7 +1,7 @@
 Venus
 =====
 
-Centralised logging
+Centralised logging server
 
 .. image:: venus.jpg
 
