@@ -79,7 +79,7 @@ def db_fixture():
             ports={'5432/tcp': db_port},
             tmpfs=['/tmp', '/var/lib/postgresql/data:rw'],
             ready_test=lambda: dockerctx.pg_ready(host=db_host, port=db_port),
-            persist=lambda: True,
+            persist=lambda: False,
             environment=['POSTGRES_PASSWORD=password'],
     ) as container:
         logger.info(
