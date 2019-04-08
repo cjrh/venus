@@ -3,7 +3,7 @@ Venus
 
 Centralised logging server
 
-.. image:: venus.jpg
+.. image:: https://raw.githubusercontent.com/cjrh/venus/master/venus.jpg
 
 Development Setup
 -----------------
