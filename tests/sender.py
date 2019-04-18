@@ -11,6 +11,7 @@ import biodome
 import logjson
 import zmq
 from zmq.log.handlers import PUBHandler
+import loghandlerzmq
 
 logger = logging.getLogger('sender')
 
@@ -39,7 +40,8 @@ def make_sock():
 
 
 def setup_logging(sock):
-    handler = PUBHandler(sock)
+    # handler = PUBHandler(sock)
+    handler = loghandlerzmq.PUSHHandler(sock)
     handler.setLevel('INFO')
     # Override all the level formatters to use JSON
     handler.formatters = defaultdict(logjson.JSONFormatter)

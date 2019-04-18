@@ -18,12 +18,14 @@ def venus_runner(db_fixture):
     """This is the venus application"""
     port = portpicker.pick_unused_port()
     env = {**os.environ, **{k: str(v) for k, v in dict(MAX_BATCH_SIZE=1).items()}}
-    proc = sp.Popen(['venus', '--port', str(port)], env=env)
+    proc = sp.Popen(['venus', '--zmqport', str(port)], env=env,
+                    creationflags=sp.CREATE_NEW_PROCESS_GROUP)
     try:
         yield proc, port
     finally:
         print('Sending SIGTERM signal')
-        proc.send_signal(signal.SIGTERM)
+        # proc.send_signal(signal.SIGTERM)
+        proc.send_signal(signal.CTRL_BREAK_EVENT)
 
     try:
         proc.wait(timeout=2.0)
@@ -40,7 +42,9 @@ def run_app(port, iterations, delay=0.2, env=None):
                      '-p', f'{port}',
                      '-i', f'{iterations}',
                      '-d', f'{delay}'
-                     ], env=env)
+                     ], env=env,
+                    creationflags=sp.CREATE_NEW_PROCESS_GROUP,
+                    )
     return proc
 
 
@@ -54,10 +58,11 @@ def test_send_logs(db_fixture, db_pool_session, venus_runner):
 
     with biodome.env_change('MAX_BATCH_SIZE', 1):
         proc_app = run_app(port, iterations=10, env=env)
-        time.sleep(3)  # Wait for the app to finish
-        if not proc_app.poll():
+        try:
+            proc_app.wait(10)
+        except sp.TimeoutExpired:
             print('Fake app still not finished. Killing.')
-            proc_app.kill()
+            proc_app.send_signal(signal.CTRL_BREAK_EVENT)
 
         # Fetch records from the DB to verify that the log messages arrived.
         async def get():
