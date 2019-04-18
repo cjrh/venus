@@ -54,21 +54,15 @@ def main():
     # We might be able to add some of those to logrecords, e.g.
     # the k8s pod name, node name, app version, etc.
 
-    """ Entry point """
-    ENABLE_LOGSTASH = biodome.environ.get('ENABLE_LOGSTASH', False)
-    if ENABLE_LOGSTASH:
-        from logstash_formatter import LogstashFormatterV1
-        logger = logging.getLogger()
-        logger.setLevel(settings.START_LOG_LEVEL)
-        handler = logging.StreamHandler(stream=sys.stdout)
-        formatter = LogstashFormatterV1()
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-    else:
-        logging.basicConfig(level='DEBUG', stream=sys.stdout)
-
+    logging.basicConfig(level='DEBUG', stream=sys.stdout)
     parser = argparse.ArgumentParser()
+    parser.add_argument('--zmqport', type=int, default=None)
     args, unknown = parser.parse_known_args()
+    if args.zmqport is not None:
+        biodome.environ['VENUS_PORT'] = args.zmqport
+
+    if unknown:
+        logger.warning(f'Unexpected parameters given: {unknown}')
 
     with io.zmq_context():
         aiorun.run(amain(args))

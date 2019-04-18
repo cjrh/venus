@@ -12,7 +12,7 @@ import logjson
 import zmq
 from zmq.log.handlers import PUBHandler
 
-logger = logging.getLogger()
+logger = logging.getLogger('sender')
 
 
 @contextlib.contextmanager
@@ -65,7 +65,9 @@ def app_items(items, delay=1.0):
 def main(args):
     SENDER_ITEMS = biodome.environ.get('SENDER_ITEMS', [])
     with make_sock() as sock:
-        sock.connect(f'tcp://{args.hostname}:{args.port}')
+        conn_str = f'tcp://{args.hostname}:{args.port}'
+        logger.info(f'Connecting to {conn_str}')
+        sock.connect(conn_str)
         setup_logging(sock)
         if SENDER_ITEMS:
             app_items(SENDER_ITEMS, args.delay)

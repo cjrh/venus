@@ -71,5 +71,6 @@ def test_send_logs(db_fixture, db_pool_session, venus_runner):
         records = loop.run_until_complete(get())
         pprint(records)
         logged_message_ids = {r['message'] for r in records}
-        pprint(logged_message_ids)
+        print('logged:', logged_message_ids)
+        print('expected:', message_uuids)
         assert logged_message_ids.issuperset(message_uuids)

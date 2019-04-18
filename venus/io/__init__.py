@@ -86,6 +86,7 @@ async def pull_sock(q: asyncio.Queue) -> None:
     incoming IO messages onto the given queue."""
     sock: Socket = CONTEXT.socket(zmq.PULL)
     apply_tcp_sock_options(sock)
+    logger.info(f'Venus binding on port {settings.VENUS_PORT()}')
     sock.bind(f'tcp://*:{settings.VENUS_PORT():d}')
 
     try:
