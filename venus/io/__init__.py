@@ -1,13 +1,10 @@
 import logging
 import asyncio
-import json
 import zmq
 
 from contextlib import contextmanager
-from typing import Dict, List
-from zmq.utils import jsonapi
+from typing import List
 from zmq.asyncio import Context, Socket
-from biodome import environ
 
 from .. import settings
 from .. import models
@@ -54,11 +51,8 @@ def zmq_context() -> Context:
     global CONTEXT
     logger.info('Creating ZMQ context.')
     CONTEXT = Context.instance()
-    # CONTEXT = Context()
     try:
         yield CONTEXT
-    except Exception as e:
-        logger.exception(f'Got error {e}')
     finally:
         logger.info('Terminating ZMQ context')
         CONTEXT.destroy()
