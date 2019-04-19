@@ -10,7 +10,7 @@ from zmq.asyncio import Context, Socket
 from biodome import environ
 
 from .. import settings
-from .. import types
+from .. import models
 
 """
 ZMQ socket options:
@@ -95,7 +95,7 @@ async def pull_sock(q: asyncio.Queue) -> None:
             raw: List[bytes] = await sock.recv_multipart()
             logger.debug(f'Received a message! {raw}')
             try:
-                msg = types.Message(*raw)
+                msg = models.Message(*raw)
             except TypeError:
                 logger.exception(f'Unexpected message received: {raw}')
                 continue

@@ -11,7 +11,7 @@ import aiodec
 
 from .. import settings
 from . import get_db_pool
-from ..types import Message
+from ..models import Message
 
 logger = logging.getLogger(__name__)
 

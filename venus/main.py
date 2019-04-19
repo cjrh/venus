@@ -8,6 +8,8 @@ import aiohealthcheck
 import aiologfields
 import aiorun
 import biodome
+import coverage
+coverage.process_startup()
 
 import venus.db.write
 from venus import db
