@@ -13,19 +13,32 @@ import pytest
 from asyncpg import Connection
 
 
+def cross_platform_process_terminator(proc: sp.Popen):
+    if sys.platform == 'win32':
+        proc.send_signal(signal.CTRL_BREAK_EVENT)
+    else:
+        proc.send_signal(signal.SIGTERM)
+
+
+def cross_platform_creation_flags():
+    if sys.platform == 'win32':
+        return sp.CREATE_NEW_PROCESS_GROUP
+    else:
+        return 0
+
+
 @pytest.fixture(scope='module')
 def venus_runner(db_fixture):
     """This is the venus application"""
     port = portpicker.pick_unused_port()
     env = {**os.environ, **{k: str(v) for k, v in dict(MAX_BATCH_SIZE=1).items()}}
     proc = sp.Popen(['venus', '--zmqport', str(port)], env=env,
-                    creationflags=sp.CREATE_NEW_PROCESS_GROUP)
+                    creationflags=cross_platform_creation_flags())
     try:
         yield proc, port
     finally:
-        print('Sending SIGTERM signal')
-        # proc.send_signal(signal.SIGTERM)
-        proc.send_signal(signal.CTRL_BREAK_EVENT)
+        print('Killing venus')
+        cross_platform_process_terminator(proc)
 
     try:
         proc.wait(timeout=2.0)
@@ -43,7 +56,7 @@ def run_app(port, iterations, delay=0.2, env=None):
                      '-i', f'{iterations}',
                      '-d', f'{delay}'
                      ], env=env,
-                    creationflags=sp.CREATE_NEW_PROCESS_GROUP,
+                    creationflags=cross_platform_creation_flags(),
                     )
     return proc
 
@@ -62,7 +75,7 @@ def test_send_logs(db_fixture, db_pool_session, venus_runner):
             proc_app.wait(10)
         except sp.TimeoutExpired:
             print('Fake app still not finished. Killing.')
-            proc_app.send_signal(signal.CTRL_BREAK_EVENT)
+            cross_platform_process_terminator(proc_app)
 
         # Fetch records from the DB to verify that the log messages arrived.
         async def get():
