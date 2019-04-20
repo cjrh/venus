@@ -1,6 +1,35 @@
 JSONB Tricks
 ------------
 
+Typical query
+=============
+
+For most kinds of logging queries, the *SQL* will typically look like this:
+
+.. code-block:: sql
+
+    SELECT
+      time,
+      correlation_id,
+      message,
+      rec.*
+    FROM
+      logs
+    CROSS JOIN jsonb_to_record(data) AS rec(
+      name text,
+      pathname text,
+      lineno integer,
+      levelno integer,
+      levelname text,
+      random_timing_data double precision,
+      exc_text text
+    )
+    WHERE
+      correlation_id = $1
+      AND random_timing_data IS NOT NULL;
+
+Pay attention to the way the JSON data is unpacked.
+
 Extracting keys from a JSONB Column
 ===================================
 
