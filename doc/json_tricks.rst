@@ -68,3 +68,8 @@ Returns all the keys.  The strategy for using this is the following:
 For records that lack some of the keys in the list, the above query will
 return ``NULL`` in those fields for those records, so it's safe to run
 on a dataset with different JSON structures in the ``data`` field.
+
+Alternative method with intermediate view
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`<https://stackoverflow.com/a/35179515>`_
