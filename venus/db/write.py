@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import List, Dict
 from uuid import UUID
 
+import asyncpg
 from asyncpg import Connection
 import aiodec
 
@@ -16,7 +17,7 @@ from ..models import Message
 logger = logging.getLogger(__name__)
 
 
-async def collect(q: asyncio.Queue[Message]):
+async def collect(q: asyncio.Queue[Message], db_pool: asyncpg.pool.Pool):
     batch = []
     try:
         while True:
@@ -68,9 +69,8 @@ def remove_unwanted_keys(data: Dict):
 
 
 @aiodec.astopwatch(message_template='Inserting $size records took $time_ sec')
-async def write_and_clear(records: List, size: int):
+async def write_and_clear(records: List, size: int, pool: asyncpg.pool.Pool):
     try:
-        pool = get_db_pool()
         async with pool.acquire() as conn:  # type: Connection
             # TODO: keep track of https://github.com/MagicStack/asyncpg/pull/295
             # TODO: `executemany` performance is being optimized.
