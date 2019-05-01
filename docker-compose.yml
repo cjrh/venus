@@ -1,0 +1,20 @@
+version: '3'
+services:
+  venus:
+    build: .
+    ports:
+     - "5049:5049"
+    volumes:
+      - .:/venus
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: venus
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+  db:
+    image: "timescale/timescaledb:latest-pg10"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: password
