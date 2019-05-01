@@ -22,7 +22,7 @@ UPDATE_ENV_VAR_INTERVAL_SECONDS = environ.get_callable(
     'UPDATE_ENV_VAR_INTERVAL_SECONDS', 60.0
 )
 
-VENUS_PORT = environ.get_callable('VENUS_PORT', 56119)
+VENUS_PORT = environ.get_callable('VENUS_PORT', 5049)
 DROP_FIELDS = environ.get_callable(
     'DROP_FIELDS', [
         'stack_info',
