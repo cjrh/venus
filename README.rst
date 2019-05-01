@@ -105,3 +105,32 @@ Here is an example of querying such data:
 Of course, if you need to constrain JSONB subfields in the ``WHERE`` clause
 it'll be more efficient to use the JSONB operators directly so that the
 GIN index on the ``data`` field can be used.
+
+Docker workflow
+---------------
+
+Building the image:
+
+.. code-block:: shell
+
+    $ docker build -f Dockerfile -t venus:$(cat VERSION) --build-arg VERSION=$(cat VERSION) .
+    $ docker images
+    REPOSITORY                   TAG                    IMAGE ID            CREATED             SIZE
+    venus                        0.0.6                  41003c1f6c29        10 seconds ago      195MB
+    <...snip...>
+    $
+
+Running the image:
+
+.. code-block:: shell
+
+    $ docker run --rm -it \
+        --net=host \     # EITHER this...
+        -p 5049:5049 \   # OR this.
+        -e VENUS_PORT=5049 \  # For apps to connect to venus
+        -e DB_HOST=postgres.hostname.com \
+        -e DB_PORT=5432 \
+        -e DB_NAME=venus \
+        -e DB_USERNAME='postgres' \
+        -e DB_PASSWORD='password'
+        venus:0.0.6
