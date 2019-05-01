@@ -25,7 +25,7 @@ def upgrade():
 
     op.execute("""
         CREATE TABLE logs (
-          time                TIMESTAMPTZ,
+          time                TIMESTAMPTZ NOT NULL,
           message             TEXT,
           correlation_id      UUID,
           data                JSONB NOT NULL
