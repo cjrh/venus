@@ -24,7 +24,7 @@ extras_require['all'] = list(
 )
 
 setup(
-    name='venus',
+    name='venus-bug-trap',
     version=open(path.join(base_dir, 'VERSION')).read().strip(),
     description='Centralised logging service',
     long_description=long_description,
