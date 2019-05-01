@@ -42,9 +42,34 @@ def upgrade():
         );
     """)
 
+    op.execute("""
+        CREATE TABLE context (
+            correlation_id  UUID PRIMARY KEY,
+            data            JSONB NOT NULL
+        );
+    """)
+
+    op.execute("CREATE INDEX idxgin_context_data ON context USING GIN (data jsonb_path_ops);")
+
+    op.execute("""
+        CREATE TABLE span (
+            span_id         UUID PRIMARY KEY ,
+            correlation_id  UUID,
+            description     TEXT,
+            time_start      TIMESTAMPTZ NOT NULL,
+            time_end        TIMESTAMPTZ NOT NULL
+        );
+    """)
+
+    op.execute("CREATE INDEX idxcor_span ON span (correlation_id);")
+
 
 def downgrade():
+    op.execute('DROP TABLE span;')
+    op.execute('DROP TABLE context;')
+
     op.execute('DROP TABLE logs;')
     op.execute('DROP EXTENSION IF EXISTS "pg_trgm";')
     op.execute('DROP EXTENSION IF EXISTS "timescaledb" CASCADE;')
     op.execute('DROP EXTENSION IF EXISTS "uuid-ossp";')
+
