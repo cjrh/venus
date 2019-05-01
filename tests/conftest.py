@@ -39,12 +39,22 @@ MAX_BYTES = 2147483647
 MAX_SPEED = 500000  # bps
 
 
+@pytest.fixture(scope='session')
+def loop():
+    if False and sys.platform == 'win32':
+        l = asyncio.ProactorEventLoop()
+        asyncio.set_event_loop(l)
+    else:
+        l = asyncio.get_event_loop()
+
+    return l
+
+
 @pytest.fixture(scope='module')
-def db_pool():
+def db_pool(loop):
     """ This fixture will set the application-level DB
     pool. Application code will use the created pool
     via the "get_db_pool()" function in the db module."""
-    loop = asyncio.get_event_loop()
     loop.run_until_complete(init_database_pool())
     try:
         yield get_db_pool()
@@ -53,10 +63,9 @@ def db_pool():
 
 
 @pytest.fixture(scope='session')
-def db_pool_session():
+def db_pool_session(loop):
     """ This DB pool is only for test functions and
     utilities, and is not available to application code."""
-    loop = asyncio.get_event_loop()
     db_pool = loop.run_until_complete(create_pool())
     try:
         yield db_pool
@@ -150,12 +159,11 @@ def db_fixture():
 
 
 @pytest.fixture(scope='module')
-def randomly_generated_data(request, db_fixture, db_pool_session):
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(insert_data(db_pool_session))
+def randomly_generated_data(request, loop, db_fixture, db_pool_session):
+    loop.run_until_complete(insert_data(loop, db_pool_session))
 
 
-async def insert_data(db_pool):
+async def insert_data(loop, db_pool):
     t = datetime.now(tz=timezone.utc)
 
     """

@@ -15,15 +15,8 @@ from venus import main, io
 
 
 @pytest.fixture(scope='module')
-def venus_runner():
+def venus_runner(loop):
     port = portpicker.pick_unused_port()
-
-    if os.name == 'ntt':
-        loop = asyncio.ProactorEventLoop()
-        asyncio.set_event_loop(loop)
-    else:
-        loop = asyncio.get_event_loop()
-
     with biodome.env_change('VENUS_PORT', port), \
          io.zmq_context():
         venus_main_task = loop.create_task(main.amain(None))

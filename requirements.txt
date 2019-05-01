@@ -1,9 +1,10 @@
 aiorun==2019.4.1
 asyncpg==0.18.3
-logstash-formatter==0.5.17
+logjson==2018.5.1
 pyzmq==18.0.1
 biodome==2018.8.3
 python-consul[asyncio]==1.1.0
 aiologfields==2018.9.1
 aiohealthcheck==2018.7.1
 aiodec==2018.10.1
+loghandlerzmq==2019.4.1
