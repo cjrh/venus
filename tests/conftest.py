@@ -140,7 +140,7 @@ def db_fixture():
 
         logger.debug(f'Running migrations on: {db_connection_url}')
 
-        # Change to the slump user instead of the postgres user to run the
+        # Change to the venus user instead of the postgres user to run the
         # migrations.
         db_connection_url = (
             f'postgres://{service_db_username}:{service_db_password}@'
