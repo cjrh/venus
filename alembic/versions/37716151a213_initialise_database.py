@@ -63,6 +63,20 @@ def upgrade():
 
     op.execute("CREATE INDEX idxcor_span ON span (correlation_id);")
 
+    op.execute("""
+        CREATE TABLE metric (
+          time                TIMESTAMPTZ NOT NULL,
+          data                JSONB NOT NULL
+    );
+    """)
+
+    op.execute("CREATE INDEX idxgin_metric_data ON metric USING GIN (data jsonb_path_ops);")
+    op.execute("""
+        SELECT create_hypertable(
+          'metric', 'time', chunk_time_interval => 43200
+        );
+    """)
+
 
 def downgrade():
     op.execute('DROP TABLE span;')
