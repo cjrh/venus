@@ -12,9 +12,17 @@ services:
       DB_NAME: venus
       DB_USERNAME: postgres
       DB_PASSWORD: password
+      CONSUL_HTTP_ADDR: "consul:8500"
+      UPDATE_ENV_VAR_INTERVAL_SECONDS: 10
   db:
     image: "timescale/timescaledb:latest-pg10"
     ports:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: password
+  consul:
+    image: "consul:latest"
+    environment:
+      CONSUL_LOCAL_CONFIG: '{"datacenter": "us_west", "server": true}'
+    ports:
+      - "8500:8500"
