@@ -11,7 +11,7 @@ import portpicker
 import pytest
 from asyncpg import Connection
 
-from venus import main, io
+from venus import main, io, db
 
 
 @pytest.fixture(scope='module')
@@ -58,6 +58,8 @@ def test_send_logs(db_fixture, db_pool_session, venus_runner):
         pprint(records)
         logged_message_ids = {r['message'] for r in records}
         pprint(logged_message_ids)
+        pprint(message_uuids)
+        pprint(set(message_uuids) - logged_message_ids)
         assert logged_message_ids.issuperset(message_uuids)
 
 
@@ -102,6 +104,7 @@ def test_extra(db_fixture, db_pool_session, venus_runner):
             message='blah blah blah',
             correlation_id=str(uuid4()),
             random_timing_data=1.23,
+            random_counter_data=42,
         ) for i in range(10)
     ]
     env = dict(SENDER_ITEMS=repr(messages))
@@ -130,7 +133,15 @@ def test_extra(db_fixture, db_pool_session, venus_runner):
     rec = my_data[0]
     assert rec['message'] == 'blah blah blah'
 
-    data = json.loads(rec['data'])
-    assert data['filename'] == 'sender.py'
-    assert data['pathname'] == 'tests/sender.py'
-    assert data['random_timing_data'] == 1.23
+    fields = loop.run_until_complete(
+        db.read.get_extra_data(rec['id'], pool=db_pool_session)
+    )
+
+    df = {
+        f['name']: f['value'] for f in fields
+    }
+
+    assert df['filename'] == 'sender.py'
+    assert df['pathname'] == 'tests/sender.py'
+    assert df['random_timing_data'] == 1.23
+    assert df['random_counter_data'] == 42

@@ -7,6 +7,7 @@ import asyncpg
 import asyncpg.pool
 import biodome
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -90,3 +91,6 @@ async def activate():
         await asyncio.sleep(1e9)
     except asyncio.CancelledError:
         await destroy_database_pool()
+
+
+from . import read

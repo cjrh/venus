@@ -9,3 +9,4 @@ aiohealthcheck==2018.7.1
 aiodec==2018.10.1
 loghandlerzmq==2019.4.1
 coverage==4.5.3
+async-lru==1.0.2
