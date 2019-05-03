@@ -164,7 +164,6 @@ def randomly_generated_data(request, loop, db_fixture, db_pool_session):
 
 
 async def insert_data(loop, db_pool):
-    t = datetime.now(tz=timezone.utc)
 
     """
     select *, data->'b'->'msg' from logs
@@ -180,11 +179,12 @@ async def insert_data(loop, db_pool):
         )
     )
 
+    t = datetime.now(tz=timezone.utc)
     async with db_pool.acquire() as conn:
         conn: Connection
-        await conn.execute('''
-            INSERT INTO logs VALUES (
-                $1, $2, $3, $4
-            )
-        ''', t, 'blah blah blah', uuid.uuid4(), json.dumps(d))
+        id_ = await conn.fetchval('''
+            INSERT INTO logs (time, message, correlation_id) VALUES (
+                $1, $2, $3
+            ) RETURNING id
+        ''', t, 'blah blah blah', uuid.uuid4())
 

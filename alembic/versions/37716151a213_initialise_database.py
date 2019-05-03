@@ -16,6 +16,8 @@ depends_on = None
 
 
 def upgrade():
+    # TODO: This doesn't actually work here because only the superuser
+    #  can install these extensions.
     op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
     op.execute('CREATE EXTENSION IF NOT EXISTS "timescaledb" CASCADE;')
     op.execute('CREATE EXTENSION IF NOT EXISTS "pg_trgm";')
@@ -26,7 +28,7 @@ def upgrade():
     op.execute("""
         CREATE TABLE vocab (
           id                  SERIAL PRIMARY KEY,
-          value               TEXT,
+          value               TEXT UNIQUE,
           type                TEXT             
     );
     """)  # 4-n but size doesn't matter because this vocab will be shared.
@@ -51,7 +53,9 @@ def upgrade():
           name                int4 REFERENCES vocab(id),
           value               int8
     );
-    """)  # 14 bytes. TODO: make index covering (name,value)
+    """)  # 14 bytes. Low volume table
+    # Search only makes sense for (name, value) together
+    op.execute("CREATE UNIQUE INDEX idx_logfieldint ON logfieldint (name, value);")
 
     op.execute("""
         CREATE TABLE logfieldfloat (
@@ -59,7 +63,9 @@ def upgrade():
           name                int4 REFERENCES vocab(id),
           value               double precision
     );
-    """)  # 16bytes. TODO: make index covering (name,value)
+    """)  # 16bytes. Medium volume table
+    # Search only makes sense for (name, value) together
+    op.execute("CREATE UNIQUE INDEX idx_logfieldfloat ON logfieldfloat (name, value);")
 
     op.execute("""
         CREATE TABLE logfieldtext (
@@ -67,7 +73,9 @@ def upgrade():
           name                int4 REFERENCES vocab(id),
           value               int4 REFERENCES vocab(id)
     );
-    """)  # 12 bytes. TODO: make index covering (name,value)
+    """)  # 12 bytes. Medium volume table
+    # Search only makes sense for (name, value) together
+    op.execute("CREATE UNIQUE INDEX idx_logfieldtext ON logfieldtext (name, value);")
 
     op.execute("""
         CREATE TABLE logs (
@@ -78,6 +86,7 @@ def upgrade():
     );
     """)  # 8 + 4 + 16 + n (text) = 28 + n bytes
 
+    op.execute("CREATE INDEX idx_logs_id ON logs (id);")
     op.execute("CREATE INDEX idxcor ON logs (correlation_id);")
     op.execute("CREATE INDEX idxgin_trgm_msg  ON logs USING gin (message gin_trgm_ops);")
 
@@ -95,6 +104,7 @@ def upgrade():
           field_id            int4
         );
     """)
+    op.execute("CREATE UNIQUE INDEX idx_logsetint ON logsetint (log_id, field_id);")
     # 8 bytes. But we need an index on each column, so that we can
     #   a) find fields from a main log record (correlation id)
     #   b) find main log records from searching on a particular field.
@@ -105,6 +115,7 @@ def upgrade():
           field_id            int4
         );
     """)
+    op.execute("CREATE UNIQUE INDEX idx_logsetfloat ON logsetfloat (log_id, field_id);")
     # 8 bytes. But we need an index on each column, so that we can
     #   a) find fields from a main log record (correlation id)
     #   b) find main log records from searching on a particular field.
@@ -115,6 +126,7 @@ def upgrade():
           field_id            int4
         );
     """)
+    op.execute("CREATE UNIQUE INDEX idx_logsettext ON logsettext (log_id, field_id);")
     # 8 bytes. But we need an index on each column, so that we can
     #   a) find fields from a main log record (correlation id)
     #   b) find main log records from searching on a particular field.
@@ -127,7 +139,6 @@ def upgrade():
             data            JSONB NOT NULL
         );
     """)
-
     op.execute("CREATE INDEX idxgin_context_data ON context USING GIN (data jsonb_path_ops);")
 
     op.execute("""
@@ -139,7 +150,6 @@ def upgrade():
             time_end        TIMESTAMPTZ NOT NULL
         );
     """)
-
     op.execute("CREATE INDEX idxcor_span ON span (correlation_id);")
 
     op.execute("""
