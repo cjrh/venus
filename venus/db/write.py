@@ -24,9 +24,9 @@ class TypeData(NamedTuple):
     set_table: str
 
 SUPPORTED_TYPES = {
-    "str": TypeData(type_="text", field_table="logfieldtext", set_table="logsettext"),
-    "int": TypeData(type_="int", field_table="logfieldint", set_table="logsetint"),
-    "float": TypeData(type_="float", field_table="logfieldfloat", set_table="logsetfloat"),
+    "str": TypeData(type_="text", field_table="field_text", set_table="log_field_text"),
+    "int": TypeData(type_="int", field_table="field_int", set_table="log_field_int"),
+    "float": TypeData(type_="float", field_table="field_float", set_table="log_field_float"),
 }
 
 
@@ -98,7 +98,7 @@ async def get_vocab_id(text: str, value) -> Tuple[int, TypeData]:
 
 @alru_cache(maxsize=2**24)
 async def get_field_id(name: str, value) -> Tuple[int, TypeData]:
-    """Covers these tables: logfieldint, logfieldfloat, logfieldtext"""
+    """Covers these tables: field_int, field_float, field_text"""
     vocab_id, type_data = await get_vocab_id(name, value)
     if type_data.type_ == 'text':
         # For text values in the logs, we also substitute out those

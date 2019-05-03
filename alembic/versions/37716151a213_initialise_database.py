@@ -48,34 +48,34 @@ def upgrade():
     # ;
 
     op.execute("""
-        CREATE TABLE logfieldint (
+        CREATE TABLE field_int (
           id                  SERIAL PRIMARY KEY,
           name                int4 REFERENCES vocab(id),
           value               int8
     );
     """)  # 14 bytes. Low volume table
     # Search only makes sense for (name, value) together
-    op.execute("CREATE UNIQUE INDEX idx_logfieldint ON logfieldint (name, value);")
+    op.execute("CREATE UNIQUE INDEX idx_field_int ON field_int (name, value);")
 
     op.execute("""
-        CREATE TABLE logfieldfloat (
+        CREATE TABLE field_float (
           id                  SERIAL PRIMARY KEY,
           name                int4 REFERENCES vocab(id),
           value               double precision
     );
     """)  # 16bytes. Medium volume table
     # Search only makes sense for (name, value) together
-    op.execute("CREATE UNIQUE INDEX idx_logfieldfloat ON logfieldfloat (name, value);")
+    op.execute("CREATE UNIQUE INDEX idx_field_float ON field_float (name, value);")
 
     op.execute("""
-        CREATE TABLE logfieldtext (
+        CREATE TABLE field_text (
           id                  SERIAL PRIMARY KEY,
           name                int4 REFERENCES vocab(id),
           value               int4 REFERENCES vocab(id)
     );
     """)  # 12 bytes. Medium volume table
     # Search only makes sense for (name, value) together
-    op.execute("CREATE UNIQUE INDEX idx_logfieldtext ON logfieldtext (name, value);")
+    op.execute("CREATE UNIQUE INDEX idx_field_text ON field_text (name, value);")
 
     op.execute("""
         CREATE TABLE logs (
@@ -99,47 +99,51 @@ def upgrade():
     # Join the main "log" table to each of the fields in that log record.
     # "Which fields are present in which logs?"
     op.execute("""
-        CREATE TABLE logsetint (
+        CREATE TABLE log_field_int (
           log_id              int4,
           field_id            int4
         );
     """)
-    op.execute("CREATE UNIQUE INDEX idx_logsetint ON logsetint (log_id, field_id);")
+    op.execute("CREATE UNIQUE INDEX idx_log_field_int ON log_field_int (log_id, field_id);")
     # 8 bytes. But we need an index on each column, so that we can
     #   a) find fields from a main log record (correlation id)
     #   b) find main log records from searching on a particular field.
 
     op.execute("""
-        CREATE TABLE logsetfloat (
+        CREATE TABLE log_field_float (
           log_id              int4,
           field_id            int4
         );
     """)
-    op.execute("CREATE UNIQUE INDEX idx_logsetfloat ON logsetfloat (log_id, field_id);")
+    op.execute("CREATE UNIQUE INDEX idx_log_field_float ON log_field_float (log_id, field_id);")
     # 8 bytes. But we need an index on each column, so that we can
     #   a) find fields from a main log record (correlation id)
     #   b) find main log records from searching on a particular field.
 
     op.execute("""
-        CREATE TABLE logsettext (
+        CREATE TABLE log_field_text (
           log_id              int4,
           field_id            int4
         );
     """)
-    op.execute("CREATE UNIQUE INDEX idx_logsettext ON logsettext (log_id, field_id);")
+    op.execute("CREATE UNIQUE INDEX idx_log_field_text ON log_field_text (log_id, field_id);")
     # 8 bytes. But we need an index on each column, so that we can
     #   a) find fields from a main log record (correlation id)
     #   b) find main log records from searching on a particular field.
 
     ##########################################################################
 
+    """ In this table, the datetime is not important, it's just data that is
+    somehow related to the correlation id. Typically it wo
+    """
+    # - Can have multiple records with same correlation_id, different fields
     op.execute("""
-        CREATE TABLE context (
+        CREATE TABLE context_field_int (
             correlation_id  UUID PRIMARY KEY,
-            data            JSONB NOT NULL
+            field_id        int4
         );
     """)
-    op.execute("CREATE INDEX idxgin_context_data ON context USING GIN (data jsonb_path_ops);")
+    op.execute("CREATE INDEX idxgin_context_field_int ON context_field_int (correlation_id)")
 
     op.execute("""
         CREATE TABLE span (
