@@ -1,5 +1,5 @@
 aiorun==2019.4.1
-asyncpg==0.18.3
+asyncpg==0.21.0
 logjson==2018.5.1
 pyzmq==18.0.1
 biodome==2018.8.3
